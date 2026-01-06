@@ -1,9 +1,9 @@
 
 
 class Todo {
-   final String title;
-   final DateTime createdAt;
-   final DateTime? doneAt;
+   String title;
+   DateTime createdAt;
+   DateTime? doneAt;
 
    Todo({
     required this.title,
