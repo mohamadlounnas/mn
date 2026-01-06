@@ -1,14 +1,13 @@
 
 
 class Todo {
-   final title;
-   final createdAt;
-   final doneAt;
+   final String title;
+   final DateTime createdAt;
+   final DateTime? doneAt;
 
    Todo({
-    this.title,
-    this.createdAt,
+    required this.title,
+    required this.createdAt,
     this.doneAt,
-   });
-  
+   }); 
 }
