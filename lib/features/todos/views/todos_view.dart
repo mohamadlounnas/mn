@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:mn/features/auth/data/repositries/users_repositry.dart';
 import 'package:mn/features/todos/data/models/todo_model.dart';
 import 'package:mn/features/todos/data/repositires/todos_repositry.dart';
 
 class TodosView extends StatefulWidget {
   final TodosRepository todosRepository;
-  const TodosView({super.key, required this.todosRepository});
+  final UsersRepository usersRepository;
+  const TodosView({super.key, required this.todosRepository, required this.usersRepository});
 
   @override
   State<TodosView> createState() => _TodosViewState();
@@ -14,12 +16,37 @@ class _TodosViewState extends State<TodosView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Todo List')),
+      appBar: AppBar(title: Text('Todo List: ${widget.usersRepository.currentUser?.name}')),
       body: ListView(
         children: [
           for (var todo in widget.todosRepository.getTodos())
+
             ListTile(
+              leading: Icon(todo.doneAt != null ? Icons.check_box : Icons.check_box_outline_blank),
               title: Text(todo.title),
+              subtitle: Text(todo.createdAt.toString()),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // done button
+                  IconButton(
+                    onPressed: () {
+                      setState(() {
+                        widget.todosRepository.markAsDone(todo.id);
+                      });
+                    },
+                    icon: Icon(Icons.done),
+                  ),
+                  IconButton(
+                    onPressed: () {
+                      setState(() {
+                        widget.todosRepository.deleteTodo(todo.id);
+                      });
+                    },
+                    icon: Icon(Icons.delete),
+                  ),
+                ],
+              ),
             ),
         ],
       ),
