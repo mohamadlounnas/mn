@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:mn/features/todos/data/repositires/todos_repositry.dart';
 import 'package:mn/home.dart';
 
 void main() {
-  runApp(const MainApp());
+  var todosRepository = TodosRepository();
+  runApp(MainApp(todosRepository: todosRepository));
 }
 
 class MainApp extends StatelessWidget {
-  const MainApp({super.key});
+  final TodosRepository todosRepository;
+  const MainApp({super.key, required this.todosRepository});
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: HomePage(),
+    return MaterialApp(
+      home: HomePage(todosRepository: todosRepository),
     );
   }
 }
