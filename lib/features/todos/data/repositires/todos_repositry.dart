@@ -1,14 +1,26 @@
 
 
 import 'package:mn/features/todos/data/models/todo_model.dart';
+import 'package:dio/dio.dart';
 
 class TodosRepository {
+    final Dio dio;
+
+    TodosRepository(this.dio);
     List<TodoModel> todos = [];
 
 
     // get all todos
-    List<TodoModel> getTodos() {
-        return todos;
+    Future<List<TodoModel>> getTodos() async {
+      var response = await dio.get('https://jsonplaceholder.typicode.com/todos');
+
+      List<TodoModel> todos = [];
+
+      for (var todo in response.data as List<dynamic>) {
+        todos.add(TodoModel.fromJson(todo));
+      }
+      
+      return todos;
     }
 
     // get todo by 

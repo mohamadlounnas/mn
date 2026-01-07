@@ -17,38 +17,43 @@ class _TodosViewState extends State<TodosView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text('Todo List: ${widget.usersRepository.currentUser?.name}')),
-      body: ListView(
-        children: [
-          for (var todo in widget.todosRepository.getTodos())
-
-            ListTile(
-              leading: Icon(todo.doneAt != null ? Icons.check_box : Icons.check_box_outline_blank),
-              title: Text(todo.title),
-              subtitle: Text(todo.createdAt.toString()),
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // done button
-                  IconButton(
-                    onPressed: () {
-                      setState(() {
-                        widget.todosRepository.markAsDone(todo.id);
-                      });
-                    },
-                    icon: Icon(Icons.done),
+      body: FutureBuilder(
+        future: widget.todosRepository.getTodos(),
+        builder: (context, asyncSnapshot) {
+          return ListView(
+            children: [
+              for (var todo in asyncSnapshot.data ?? [])
+          
+                ListTile(
+                  leading: Icon(todo.doneAt != null ? Icons.check_box : Icons.check_box_outline_blank),
+                  title: Text(todo.title),
+                  subtitle: Text(todo.createdAt.toString()),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // done button
+                      IconButton(
+                        onPressed: () {
+                          setState(() {
+                            widget.todosRepository.markAsDone(todo.id);
+                          });
+                        },
+                        icon: Icon(Icons.done),
+                      ),
+                      IconButton(
+                        onPressed: () {
+                          setState(() {
+                            widget.todosRepository.deleteTodo(todo.id);
+                          });
+                        },
+                        icon: Icon(Icons.delete),
+                      ),
+                    ],
                   ),
-                  IconButton(
-                    onPressed: () {
-                      setState(() {
-                        widget.todosRepository.deleteTodo(todo.id);
-                      });
-                    },
-                    icon: Icon(Icons.delete),
-                  ),
-                ],
-              ),
-            ),
-        ],
+                ),
+            ],
+          );
+        }
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {

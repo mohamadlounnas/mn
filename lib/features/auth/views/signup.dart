@@ -2,13 +2,12 @@
 import 'package:flutter/material.dart';
 import 'package:mn/features/auth/data/models/user_model.dart';
 import 'package:mn/features/auth/data/repositries/users_repositry.dart';
+import 'package:mn/features/auth/views/auth_provider.dart';
 import 'package:mn/features/todos/data/repositires/todos_repositry.dart';
 import 'package:mn/home.dart';
 
 class SignupForm extends StatefulWidget {
-  const SignupForm({super.key, required this.usersRepository, required this.todosRepository});
-  final UsersRepository usersRepository;
-  final TodosRepository todosRepository;
+  const SignupForm({super.key});
   @override
   State<SignupForm> createState() => _SignupFormState();
 }
@@ -21,6 +20,9 @@ class _SignupFormState extends State<SignupForm> {
 
   @override
   Widget build(BuildContext context) {
+    var dataProvider = DataProvider.of(context);
+    var usersRepository = dataProvider.usersRepository;
+    var todosRepository = dataProvider.todosRepository;
     return Form(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -40,10 +42,10 @@ class _SignupFormState extends State<SignupForm> {
                 controller: password,
               ),
               TextButton(onPressed: () {
-                widget.usersRepository.signUp(
+                usersRepository.signUp(
                   UserModel(id: '', name: name.text, email: email.text, password: password.text)
                 );
-                Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage(todosRepository: widget.todosRepository, usersRepository: widget.usersRepository)));
+                Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage(todosRepository: todosRepository, usersRepository: usersRepository)));
               }, child: Text('Signup')),
             ],
           ),
