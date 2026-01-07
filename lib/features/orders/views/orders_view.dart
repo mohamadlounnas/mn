@@ -1,31 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:mn/features/auth/data/repositries/users_repositry.dart';
-import 'package:mn/features/todos/data/models/todo_model.dart';
-import 'package:mn/features/todos/data/repositires/todos_repositry.dart';
+import 'package:mn/features/orders/data/models/order_model.dart';
+import 'package:mn/features/orders/data/repositries/orders_repositry.dart';
 
-class TodosView extends StatefulWidget {
-  final TodosRepository todosRepository;
+class OrdersView extends StatefulWidget {
+  final OrdersRepository ordersRepository;
   final UsersRepository usersRepository;
 
-  const TodosView({
+  const OrdersView({
     super.key,
-    required this.todosRepository,
+    required this.ordersRepository,
     required this.usersRepository,
   });
 
   @override
-  State<TodosView> createState() => _TodosViewState();
+  State<OrdersView> createState() => _OrdersViewState();
 }
 
-class _TodosViewState extends State<TodosView> {
+class _OrdersViewState extends State<OrdersView> {
   @override
   Widget build(BuildContext context) {
     final isWideScreen = MediaQuery.of(context).size.width > 800;
-    final todos = widget.todosRepository.getTodos();
+    final orders = widget.ordersRepository.getOrders();
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Todos'),
+        title: const Text('Orders'),
         actions: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -39,36 +39,36 @@ class _TodosViewState extends State<TodosView> {
         ],
       ),
       body: isWideScreen
-          ? _buildWebLayout(todos)
-          : _buildMobileLayout(todos),
+          ? _buildWebLayout(orders)
+          : _buildMobileLayout(orders),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: _showAddTodoDialog,
+        onPressed: _showAddOrderDialog,
         icon: const Icon(Icons.add),
-        label: const Text('New Todo'),
+        label: const Text('New Order'),
       ),
     );
   }
 
-  // Web layout - Dashboard with table
-  Widget _buildWebLayout(List<TodoModel> todos) {
+  // Web layout - Always show dashboard
+  Widget _buildWebLayout(List<OrdersModel> orders) {
     return Padding(
       padding: const EdgeInsets.all(24.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header stats
+          // Header stats - always visible
           Row(
             children: [
-              _buildStatCard('Total Todos', todos.length.toString(), Icons.list_alt, Colors.blue),
+              _buildStatCard('Total Orders', orders.length.toString(), Icons.receipt_long, Colors.blue),
               const SizedBox(width: 16),
-              _buildStatCard('Pending', todos.where((t) => t.doneAt == null).length.toString(), Icons.pending_actions, Colors.orange),
+              _buildStatCard('Pending', orders.where((o) => !o.isDone).length.toString(), Icons.pending, Colors.orange),
               const SizedBox(width: 16),
-              _buildStatCard('Completed', todos.where((t) => t.doneAt != null).length.toString(), Icons.task_alt, Colors.green),
+              _buildStatCard('Completed', orders.where((o) => o.isDone).length.toString(), Icons.check_circle, Colors.green),
             ],
           ),
           const SizedBox(height: 24),
 
-          // Todos table card
+          // Orders table card - always visible
           Expanded(
             child: Card(
               elevation: 2,
@@ -80,9 +80,9 @@ class _TodosViewState extends State<TodosView> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('All Todos', style: Theme.of(context).textTheme.titleLarge),
+                        Text('All Orders', style: Theme.of(context).textTheme.titleLarge),
                         Text(
-                          '${todos.length} todos',
+                          '${orders.length} orders',
                           style: TextStyle(color: Colors.grey[600]),
                         ),
                       ],
@@ -90,48 +90,42 @@ class _TodosViewState extends State<TodosView> {
                     const SizedBox(height: 16),
                     const Divider(),
                     Expanded(
-                      child: todos.isEmpty
+                      child: orders.isEmpty
                           ? _buildEmptyTableState()
                           : SingleChildScrollView(
                               scrollDirection: Axis.horizontal,
                               child: SingleChildScrollView(
                                 child: DataTable(
                                   columns: const [
-                                    DataColumn(label: Text('Title')),
-                                    DataColumn(label: Text('Created')),
+                                    DataColumn(label: Text('Product')),
+                                    DataColumn(label: Text('Quantity')),
+                                    DataColumn(label: Text('Date')),
                                     DataColumn(label: Text('Status')),
                                     DataColumn(label: Text('Actions')),
                                   ],
-                                  rows: todos.map((todo) {
-                                    final isDone = todo.doneAt != null;
+                                  rows: orders.map((order) {
                                     return DataRow(
                                       cells: [
-                                        DataCell(
-                                          Text(
-                                            todo.title,
-                                            style: TextStyle(
-                                              decoration: isDone ? TextDecoration.lineThrough : null,
-                                            ),
-                                          ),
-                                        ),
-                                        DataCell(Text(_formatDate(todo.createdAt))),
-                                        DataCell(_buildStatusChip(isDone)),
+                                        DataCell(Text(order.product)),
+                                        DataCell(Text(order.quantity.toString())),
+                                        DataCell(Text(_formatDate(order.created))),
+                                        DataCell(_buildStatusChip(order.isDone)),
                                         DataCell(
                                           Row(
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
                                               IconButton(
                                                 icon: Icon(
-                                                  isDone ? Icons.undo : Icons.check,
-                                                  color: isDone ? Colors.orange : Colors.green,
+                                                  order.isDone ? Icons.undo : Icons.check,
+                                                  color: order.isDone ? Colors.orange : Colors.green,
                                                 ),
-                                                onPressed: () => _toggleTodoStatus(todo),
-                                                tooltip: isDone ? 'Mark as pending' : 'Mark as done',
+                                                onPressed: () => _toggleOrderStatus(order),
+                                                tooltip: order.isDone ? 'Mark as pending' : 'Mark as done',
                                               ),
                                               IconButton(
                                                 icon: const Icon(Icons.delete, color: Colors.red),
-                                                onPressed: () => _deleteTodo(todo),
-                                                tooltip: 'Delete todo',
+                                                onPressed: () => _deleteOrder(order),
+                                                tooltip: 'Delete order',
                                               ),
                                             ],
                                           ),
@@ -153,20 +147,21 @@ class _TodosViewState extends State<TodosView> {
     );
   }
 
+  // Empty state inside table card for web
   Widget _buildEmptyTableState() {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.checklist_outlined, size: 64, color: Colors.grey[400]),
+          Icon(Icons.inbox_outlined, size: 64, color: Colors.grey[400]),
           const SizedBox(height: 16),
           Text(
-            'No todos yet',
+            'No orders yet',
             style: TextStyle(fontSize: 18, color: Colors.grey[600], fontWeight: FontWeight.w500),
           ),
           const SizedBox(height: 8),
           Text(
-            'Click "New Todo" to create your first task',
+            'Click "New Order" to create your first order',
             style: TextStyle(color: Colors.grey[500]),
           ),
         ],
@@ -220,58 +215,52 @@ class _TodosViewState extends State<TodosView> {
     );
   }
 
-  // Mobile layout - Card list
-  Widget _buildMobileLayout(List<TodoModel> todos) {
-    if (todos.isEmpty) {
+  // Mobile layout
+  Widget _buildMobileLayout(List<OrdersModel> orders) {
+    if (orders.isEmpty) {
       return _buildEmptyMobileState();
     }
 
     return ListView.builder(
       padding: const EdgeInsets.all(16),
-      itemCount: todos.length,
+      itemCount: orders.length,
       itemBuilder: (context, index) {
-        final todo = todos[index];
-        final isDone = todo.doneAt != null;
-
+        final order = orders[index];
         return Card(
           margin: const EdgeInsets.only(bottom: 12),
           child: ListTile(
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             leading: CircleAvatar(
-              backgroundColor: isDone ? Colors.green[100] : Colors.orange[100],
+              backgroundColor: order.isDone ? Colors.green[100] : Colors.orange[100],
               child: Icon(
-                isDone ? Icons.check : Icons.pending_actions,
-                color: isDone ? Colors.green : Colors.orange,
+                order.isDone ? Icons.check : Icons.shopping_bag,
+                color: order.isDone ? Colors.green : Colors.orange,
               ),
             ),
             title: Text(
-              todo.title,
+              order.product,
               style: TextStyle(
                 fontWeight: FontWeight.w600,
-                decoration: isDone ? TextDecoration.lineThrough : null,
+                decoration: order.isDone ? TextDecoration.lineThrough : null,
               ),
             ),
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 4),
+                Text('Quantity: ${order.quantity}'),
                 Text(
-                  _formatDate(todo.createdAt),
+                  _formatDate(order.created),
                   style: TextStyle(color: Colors.grey[500], fontSize: 12),
                 ),
-                if (isDone && todo.doneAt != null)
-                  Text(
-                    'Done: ${_formatDate(todo.doneAt!)}',
-                    style: TextStyle(color: Colors.green[600], fontSize: 12),
-                  ),
               ],
             ),
             trailing: PopupMenuButton<String>(
               onSelected: (value) {
                 if (value == 'toggle') {
-                  _toggleTodoStatus(todo);
+                  _toggleOrderStatus(order);
                 } else if (value == 'delete') {
-                  _deleteTodo(todo);
+                  _deleteOrder(order);
                 }
               },
               itemBuilder: (context) => [
@@ -279,9 +268,9 @@ class _TodosViewState extends State<TodosView> {
                   value: 'toggle',
                   child: Row(
                     children: [
-                      Icon(isDone ? Icons.undo : Icons.check),
+                      Icon(order.isDone ? Icons.undo : Icons.check),
                       const SizedBox(width: 8),
-                      Text(isDone ? 'Mark Pending' : 'Mark Done'),
+                      Text(order.isDone ? 'Mark Pending' : 'Mark Done'),
                     ],
                   ),
                 ),
@@ -303,20 +292,21 @@ class _TodosViewState extends State<TodosView> {
     );
   }
 
+  // Empty state for mobile
   Widget _buildEmptyMobileState() {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.checklist_outlined, size: 80, color: Colors.grey[400]),
+          Icon(Icons.shopping_cart_outlined, size: 80, color: Colors.grey[400]),
           const SizedBox(height: 16),
           Text(
-            'No todos yet',
+            'No orders yet',
             style: TextStyle(fontSize: 20, color: Colors.grey[600]),
           ),
           const SizedBox(height: 8),
           Text(
-            'Tap the button below to create your first task',
+            'Tap the button below to create your first order',
             style: TextStyle(color: Colors.grey[500]),
           ),
         ],
@@ -328,18 +318,18 @@ class _TodosViewState extends State<TodosView> {
     return '${date.day}/${date.month}/${date.year} at ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
   }
 
-  void _toggleTodoStatus(TodoModel todo) {
+  void _toggleOrderStatus(OrdersModel order) {
     setState(() {
-      widget.todosRepository.markAsDone(todo.id);
+      widget.ordersRepository.markAsDone(order.id);
     });
   }
 
-  void _deleteTodo(TodoModel todo) {
+  void _deleteOrder(OrdersModel order) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Todo'),
-        content: Text('Are you sure you want to delete "${todo.title}"?'),
+        title: const Text('Delete Order'),
+        content: Text('Are you sure you want to delete "${order.product}"?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -348,7 +338,7 @@ class _TodosViewState extends State<TodosView> {
           TextButton(
             onPressed: () {
               setState(() {
-                widget.todosRepository.deleteTodo(todo.id);
+                widget.ordersRepository.deleteOrder(order.id);
               });
               Navigator.pop(context);
             },
@@ -360,48 +350,79 @@ class _TodosViewState extends State<TodosView> {
     );
   }
 
-  void _showAddTodoDialog() async {
-    String todoTitle = '';
+  void _showAddOrderDialog() async {
+    String productName = '';
+    int quantity = 1;
 
-    final result = await showDialog<String>(
+    final result = await showDialog<Map<String, dynamic>>(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          title: const Text('Add New Todo'),
-          content: TextField(
-            decoration: const InputDecoration(
-              labelText: 'Todo Title',
-              border: OutlineInputBorder(),
-              prefixIcon: Icon(Icons.edit),
-            ),
-            onChanged: (value) => todoTitle = value,
-            autofocus: true,
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
-            FilledButton(
-              onPressed: () {
-                if (todoTitle.isNotEmpty) {
-                  Navigator.pop(context, todoTitle);
-                }
-              },
-              child: const Text('Add Todo'),
-            ),
-          ],
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: const Text('Add New Order'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    decoration: const InputDecoration(
+                      labelText: 'Product Name',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.shopping_bag),
+                    ),
+                    onChanged: (value) => productName = value,
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      const Text('Quantity: '),
+                      IconButton(
+                        onPressed: () {
+                          if (quantity > 1) setDialogState(() => quantity--);
+                        },
+                        icon: const Icon(Icons.remove_circle_outline),
+                      ),
+                      Text(
+                        quantity.toString(),
+                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      IconButton(
+                        onPressed: () => setDialogState(() => quantity++),
+                        icon: const Icon(Icons.add_circle_outline),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Cancel'),
+                ),
+                FilledButton(
+                  onPressed: () {
+                    if (productName.isNotEmpty) {
+                      Navigator.pop(context, {'product': productName, 'quantity': quantity});
+                    }
+                  },
+                  child: const Text('Add Order'),
+                ),
+              ],
+            );
+          },
         );
       },
     );
 
     if (result != null) {
       setState(() {
-        widget.todosRepository.createTodo(
-          TodoModel(
+        widget.ordersRepository.createOrder(
+          OrdersModel(
             id: DateTime.now().microsecondsSinceEpoch.toString(),
-            title: result,
-            createdAt: DateTime.now(),
+            userId: widget.usersRepository.currentUser!.id,
+            product: result['product'],
+            quantity: result['quantity'],
+            created: DateTime.now(),
           ),
         );
       });

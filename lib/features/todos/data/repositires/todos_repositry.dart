@@ -1,43 +1,53 @@
-
-
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mn/features/todos/data/models/todo_model.dart';
 
 class TodosRepository {
-    List<TodoModel> todos = [];
+  List<TodoModel> todos = [];
+  
+  static const String _todosKey = 'todos';
 
+  Future<void> init() async {
+    await _loadTodos();
+  }
 
-    // get all todos
-    List<TodoModel> getTodos() {
-        return todos;
+  Future<void> _loadTodos() async {
+    final prefs = await SharedPreferences.getInstance();
+    final todosJson = prefs.getStringList(_todosKey);
+    
+    if (todosJson != null) {
+      todos = todosJson
+          .map((json) => TodoModel.fromJson(jsonDecode(json)))
+          .toList();
     }
+  }
 
-    // get todo by 
-    TodoModel getTodoById(String id) {
-        return todos.firstWhere((todo) => todo.id == id);
-    }
+  Future<void> _saveTodos() async {
+    final prefs = await SharedPreferences.getInstance();
+    final todosJson = todos.map((todo) => jsonEncode(todo.toJson())).toList();
+    await prefs.setStringList(_todosKey, todosJson);
+  }
 
-    // create todo
-    TodoModel createTodo(TodoModel todo) {
-        todos.add(todo);
-        return todo;
-    }
+  List<TodoModel> getTodos() => todos;
 
-    // mark as done
-    TodoModel markAsDone(String id) {
-        var todo = getTodoById(id);
-        var newTodo = TodoModel(
-          id: todo.id,
-          title: todo.title,
-          createdAt: todo.createdAt,
-          doneAt: DateTime.now(),
-        );
-        todos.remove(todo);
-        todos.add(newTodo);
-        return newTodo;
-    }
+  Future<void> createTodo(TodoModel todo) async {
+    todos.add(todo);
+    await _saveTodos();
+  }
 
-    // delete todo
-    void deleteTodo(String id) {
-        todos.removeWhere((todo) => todo.id == id);
+  Future<void> markAsDone(String id) async {
+    final index = todos.indexWhere((t) => t.id == id);
+    if (index != -1) {
+      final todo = todos[index];
+      todos[index] = todo.copyWith(
+        doneAt: todo.doneAt == null ? DateTime.now() : null,
+      );
+      await _saveTodos();
     }
+  }
+
+  Future<void> deleteTodo(String id) async {
+    todos.removeWhere((t) => t.id == id);
+    await _saveTodos();
+  }
 }

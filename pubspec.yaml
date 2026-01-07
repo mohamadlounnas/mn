@@ -4,11 +4,13 @@ publish_to: 'none'
 version: 0.1.0+1
 
 environment:
-  sdk: ^3.11.0-93.1.beta
+  sdk: 3.10.4
 
 dependencies:
+
   flutter:
     sdk: flutter
+  shared_preferences: ^2.2.2
 
 dev_dependencies:
   flutter_test:
