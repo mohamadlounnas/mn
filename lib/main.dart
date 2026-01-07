@@ -3,12 +3,11 @@ import 'package:mn/features/auth/data/repositries/users_repositry.dart';
 import 'package:mn/features/auth/views/auth.dart';
 import 'package:mn/features/auth/views/auth_provider.dart';
 import 'package:mn/features/todos/data/repositires/todos_repositry.dart';
-import 'package:mn/test.dart';
 import 'package:dio/dio.dart';
 
 void main() {
   var dio = Dio();
-  
+
   var todosRepository = TodosRepository(dio);
   var usersRepository = UsersRepository(dio);
 
