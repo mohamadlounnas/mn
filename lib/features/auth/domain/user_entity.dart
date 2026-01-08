@@ -1,8 +1,10 @@
 abstract class UserEntity {
-  final String id;
+  final int id;
   final String name;
-  final String email;
-  final String password;
+  final String phone;
+  final String image_url;
+  final String role;
 
-  UserEntity({required this.id, required this.name, required this.email, required this.password});
+  UserEntity({
+    required this.id, required this.name, required this.phone, required this.image_url, required this.role});
 }

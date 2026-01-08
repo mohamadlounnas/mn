@@ -15,7 +15,7 @@ class AuthView extends StatefulWidget {
 
 class _AuthViewState extends State<AuthView> {
 
-  bool isSignup = true;
+  bool isSignup = false;
 
   @override
   Widget build(BuildContext context) {

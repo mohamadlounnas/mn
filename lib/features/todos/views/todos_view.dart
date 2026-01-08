@@ -16,7 +16,7 @@ class _TodosViewState extends State<TodosView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Todo List: ${widget.usersRepository.currentUser?.name}')),
+      appBar: AppBar(title: Text('Todo List: ${widget.usersRepository.currentUser.value?.name}')),
       body: FutureBuilder(
         future: widget.todosRepository.getTodos(),
         builder: (context, asyncSnapshot) {
