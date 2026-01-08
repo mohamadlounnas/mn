@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mn/features/auth/data/repositries/users_repositry.dart';
 import 'package:mn/features/auth/views/auth_provider.dart';
+import 'package:mn/features/posts/views/posts_page.dart';
 import 'package:mn/features/todos/data/repositires/todos_repositry.dart';
 
 class SigninForm extends StatelessWidget {
@@ -40,6 +41,23 @@ class SigninForm extends StatelessWidget {
                     },
                   ),
 
+                  // logout button
+                  ValueListenableBuilder(
+                    valueListenable: usersRepository.currentUser,
+                    builder: (context, user, _) {
+                      if (usersRepository.currentUser.value != null) {
+                        return ElevatedButton(
+                          onPressed: () {
+                            usersRepository.logout();
+                          },
+                          child: Text('Sign Out'),
+                        );
+                      } else {
+                        return Text("not signed in");
+                      }
+                    },
+                  ),
+
                   TextFormField(
                     controller: phone,
                     decoration: InputDecoration(labelText: 'Phone'),
@@ -54,6 +72,13 @@ class SigninForm extends StatelessWidget {
                         phone.text,
                         password.text,
                       );
+                      if (user != null) {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => PostsPage(),
+                          ),
+                        );
+                      }
                     },
                     child: Text('Sign In'),
                   ),

@@ -58,7 +58,22 @@ class UsersRepository {
 
     if (token != null) {
       dio.options.headers['Authorization'] = 'Bearer $token';
+      // fetch user info from api
+      var response = await dio.get('/api/auth/me');
+      var userJson = response.data;
+      var user = UserModel.fromJson(userJson);
+      currentUser.value = user;
     }
+  }
+
+
+  //  logout
+  Future<void> logout() async {
+    currentUser.value = null;
+    dio.options.headers.remove('Authorization');
+
+    var prefs = await SharedPreferences.getInstance();
+    await prefs.remove('auth_token');
   }
 
   // create user
