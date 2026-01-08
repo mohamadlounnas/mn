@@ -42,9 +42,9 @@ class _SignupFormState extends State<SignupForm> {
                 controller: password,
               ),
               TextButton(onPressed: () {
-                usersRepository.signUp(
-                  UserModel(id: '', name: name.text, email: email.text, password: password.text)
-                );
+                // usersRepository.signUp(
+                  // UserModel(id: '', name: name.text, email: email.text, password: password.text)
+                // );
                 Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage(todosRepository: todosRepository, usersRepository: usersRepository)));
               }, child: Text('Signup')),
             ],
