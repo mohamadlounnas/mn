@@ -43,6 +43,12 @@ class PostsPage extends StatelessWidget {
             children: [
               for (var post in postsList)
                 ListTile(
+                  onTap: () async {
+                    // 1. show dailog of update
+                    final ralult = await showDialog(...builder: 
+                    
+                    // 2. check value
+                  },
                   title: Text(post.title),
                   subtitle: Text(post.description),
                 ),

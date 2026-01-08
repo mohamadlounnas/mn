@@ -36,4 +36,7 @@ class PostsRepositry {
     ];
     return post;
   }
+
+  // update post
+  ...
 }
