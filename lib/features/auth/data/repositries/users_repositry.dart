@@ -1,7 +1,7 @@
 
 
 
-import 'dart:js_interop';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:flutter/material.dart';
 import 'package:mn/features/auth/data/models/user_model.dart';
@@ -40,7 +40,25 @@ class UsersRepository {
     currentUser.value = user;
     dio.options.headers['Authorization'] = 'Bearer $token';
 
+    // save token
+    var prefs = await SharedPreferences.getInstance();
+
+    await prefs.setString('auth_token', token);
+
+
+
     return user;
+  }
+
+
+  // load current user from shared preferences
+  Future<void> loadCurrentUser() async {
+    var prefs = await SharedPreferences.getInstance();
+    var token = prefs.getString('auth_token');
+
+    if (token != null) {
+      dio.options.headers['Authorization'] = 'Bearer $token';
+    }
   }
 
   // create user
